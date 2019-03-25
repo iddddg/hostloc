@@ -7,6 +7,12 @@ $cookie = "";
 $account[] = ['账号1', 'password'];
 $account[] = ['账号2', 'password1'];
 
+// 签到失败通知
+// Server酱 SCKEY 获取方法：http://sc.ftqq.com
+$ft_sckey = "******";
+// TgBot SCKEY 获取方法：Telegram关注 @onePushBot 发送/start即可获取
+$tg_sckey = "******";
+
 // Go
 foreach ($account as $key => $value) {
     brush($value[0], $value[1]);
@@ -23,6 +29,8 @@ function brush($username, $password)
         echo "登录失败（{$username}）\n";
         echo date("Y-m-d H:i:s\n");
         echo "----------------------------------------------------------\n";
+        // 签到失败通知
+        notice($username);
         return;
     }
     echo "初始信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
@@ -155,4 +163,28 @@ function http_post($url, $data)
     $result = curl_exec($ch);
     curl_close($ch);
     return $result;
+}
+
+// 通知
+function notice($username)
+{
+    global $ft_sckey;
+    global $tg_sckey;
+
+    // Server酱 通知
+    if ($ft_sckey) {
+        http_post("https://sc.ftqq.com/" . $ft_sckey . ".send", [
+            "text" => "Hostloc签到失败",
+            "desp" => "您的账号(" . $username . ")签到失败",
+        ]);
+    }
+
+    // Telegram 通知
+    if ($tg_sckey) {
+        http_post("https://asorry.com/bot.php", [
+            "method" => "send",
+            "content" => "Hostloc签到失败\n您的账号(" . $username . ")签到失败",
+            "sckey" => $tg_sckey
+        ]);
+    }
 }
