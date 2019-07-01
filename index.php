@@ -1,8 +1,6 @@
 <?php
 // 设置默认时区
 date_default_timezone_set("PRC");
-// 留空勿填
-$cookie = "";
 
 // 多账号复制多个,一行一个账号密码
 // $account[num] = ['账号', '密码'];
@@ -15,6 +13,9 @@ $account[] = ['账号2', 'password1'];
 $ft_sckey = "******";
 // TgBot SCKEY 获取方法：Telegram关注 @onePushBot 发送/start即可获取
 $tg_sckey = "******";
+
+// 留空勿填
+$cookie = "";
 
 // Go
 $need_brush = need_brush($account);
