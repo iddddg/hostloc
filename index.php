@@ -3,9 +3,10 @@
 $cookie = "";
 
 // 多账号复制多个,一行一个账号密码
-// $account[] = ['账号', '密码'];
+// $account[num] = ['账号', '密码'];
 $account[] = ['账号1', 'password'];
 $account[] = ['账号2', 'password1'];
+// 【注意】增加/删除/修改账号等操作请删除代码目录下的account.dat(如果有的话)文件
 
 // 签到失败通知
 // Server酱 SCKEY 获取方法：http://sc.ftqq.com
@@ -14,35 +15,68 @@ $ft_sckey = "******";
 $tg_sckey = "******";
 
 // Go
-foreach ($account as $key => $value) {
-    brush($value[0], $value[1]);
+$need_brush = need_brush($account);
+brush($need_brush);
+
+// 获取今日需要刷分的账号
+function need_brush($account)
+{
+    $file = 'account.dat';
+    if (file_exists($file)) {
+        $dat = json_decode(file_get_contents($file), 1);
+    }else{ 
+        foreach ($account as $key => $value) {
+            $dat[$key] = [
+                'username' => $value[0],
+                'password' => $value[1],
+                'status' => 'err',
+                'date' => date('Y-m-d')
+            ];
+        }
+        file_put_contents($file, json_encode($dat));
+    }
+    
+    foreach ($dat as $key => $value) {
+        if ($value['status'] == 'suc' && $value['date'] == date('Y-m-d')) {
+            unset($dat[$key]);
+        }
+    }
+
+    return $dat;
 }
 
 // 刷分
-function brush($username, $password)
+function brush($need_brush)
 {
-    echo "----------------------------------------------------------\n";
-    $data = login($username, $password);
-    if ($data['username'] == $username) {
-        echo "登录成功（{$username}）\n";
-    } else {
-        echo "登录失败（{$username}）\n";
+    foreach ($need_brush as $key => $value) {
+        echo "----------------------------------------------------------\n";
+        $data = login($value['username'], $value['password']);
+        if ($data['username'] == $value['username']) {
+            echo "登录成功（{$value['username']}）\n";
+        } else {
+            echo "登录失败（{$value['username']}）\n";
+            echo date("Y-m-d H:i:s\n");
+            echo "----------------------------------------------------------\n";
+            continue;
+        }
+        echo "初始信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
+        echo "刷分中 ";
+        for ($i = 31180; $i < 31210; $i++) {
+            $html = http_get(str_replace('*', $i, 'https://www.hostloc.com/space-uid-*.html'));
+            echo $i == 31209 ? "+ 完成\n" : "+";
+            sleep(rand(5, 10));
+        }
+        $data = get_info();
+        echo "结束信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
         echo date("Y-m-d H:i:s\n");
         echo "----------------------------------------------------------\n";
-        // 签到失败通知
-        notice($username);
-        return;
+
+        success($key);
+        unset($need_brush[$key]);
+        sleep(rand(5, 10));
     }
-    echo "初始信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
-    echo "刷分中 ";
-    for ($i = 31180; $i < 31210; $i++) {
-        $html = http_get(str_replace('*', $i, 'https://www.hostloc.com/space-uid-*.html'));
-        echo $i == 31209 ? "+ 完成\n" : "+";
-    }
-    $data = get_info();
-    echo "结束信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
-    echo date("Y-m-d H:i:s\n");
-    echo "----------------------------------------------------------\n";
+
+    notice($need_brush);
 }
 
 // 登录
@@ -165,26 +199,42 @@ function http_post($url, $data)
     return $result;
 }
 
+// 成功更新状态和日期
+function success($key)
+{
+    $file = 'account.dat';
+    $dat = json_decode(file_get_contents($file), 1);
+    $dat[$key]['status'] = 'suc';
+    $dat[$key]['date'] = date('Y-m-d');
+    file_put_contents($file, json_encode($dat));
+}
+
 // 通知
-function notice($username)
+function notice($err_account)
 {
     global $ft_sckey;
     global $tg_sckey;
 
-    // Server酱 通知
-    if ($ft_sckey) {
-        http_post("https://sc.ftqq.com/" . $ft_sckey . ".send", [
-            "text" => "Hostloc签到失败",
-            "desp" => "您的账号(" . $username . ")签到失败",
-        ]);
-    }
+    if (date('H') == 21) {
+        $username = array_column($err_account, 'username');
+        $title = 'Hostloc签到失败';
+        $content = '您的账号（' . implode('，', $username) . '），签到失败';
+        
+        // Server酱 通知
+        if ($ft_sckey) {
+            http_post("https://sc.ftqq.com/" . $ft_sckey . ".send", [
+                "text" => $title,
+                "desp" => $content
+            ]);
+        }
 
-    // Telegram 通知
-    if ($tg_sckey) {
-        http_post("https://asorry.com/bot.php", [
-            "method" => "send",
-            "content" => "Hostloc签到失败\n您的账号(" . $username . ")签到失败",
-            "sckey" => $tg_sckey
-        ]);
+        // Telegram 通知
+        if ($tg_sckey) {
+            http_post("https://asorry.com/bot.php", [
+                "method" => "send",
+                "content" => $title . "\n" .$content,
+                "sckey" => $tg_sckey
+            ]);
+        }
     }
 }
