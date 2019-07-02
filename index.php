@@ -218,7 +218,7 @@ function notice($err_account)
     global $ft_sckey;
     global $tg_sckey;
 
-    if (date('H') == 21) {
+    if (!empty($err_account) && date('H') == 21) {
         $username = array_column($err_account, 'username');
         $title = 'Hostloc签到失败';
         $content = '您的账号（' . implode('，', $username) . '），签到失败';
