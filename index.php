@@ -96,13 +96,13 @@ function login($username, $password)
     );
     $login = http_post('https://www.hostloc.com/member.php?mod=logging&action=login&loginsubmit=yes&infloat=yes&lssubmit=yes&inajax=1', $loginData, $cookie);
 
-    preg_match("/cookie=\"(\w*?)\=(\w*)/", $login, $cookie);
-    preg_match("/href=\"(.*?)\"/", $login, $url);
+    // preg_match("/cookie=\"(\w*?)\=(\w*)/", $login, $cookie);
+    // preg_match("/href=\"(.*?)\"/", $login, $url);
 
-    if (!empty($cookie[1])) {
-        $cookie = "{$cookie[1]}={$cookie[2]};";
-        http_post($url[1], $loginData, $cookie);
-    }
+    // if (!empty($cookie[1])) {
+    //     $cookie = "{$cookie[1]}={$cookie[2]};";
+    //     http_post($url[1], $loginData, $cookie);
+    // }
 
     $data = get_info();
 
