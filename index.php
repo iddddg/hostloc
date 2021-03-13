@@ -65,7 +65,7 @@ function brush($need_brush)
         echo "初始信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
         echo "刷分中 ";
         for ($i = 31180; $i < 31210; $i++) {
-            $html = http_get(str_replace('*', $i, 'https://www.hostloc.com/space-uid-*.html'));
+            $html = http_get(str_replace('*', $i, 'https://hostloc.com/space-uid-*.html'));
             echo $i == 31209 ? "+ 完成\n" : "+";
             sleep(rand(5, 10));
         }
@@ -94,7 +94,7 @@ function login($username, $password)
         "handlekey" => "ls",
         'cookietime' => 2592000
     );
-    $login = http_post('https://www.hostloc.com/member.php?mod=logging&action=login&loginsubmit=yes&infloat=yes&lssubmit=yes&inajax=1', $loginData, $cookie);
+    $login = http_post('https://hostloc.com/member.php?mod=logging&action=login&loginsubmit=yes&infloat=yes&lssubmit=yes&inajax=1', $loginData, $cookie);
 
     // preg_match("/cookie=\"(\w*?)\=(\w*)/", $login, $cookie);
     // preg_match("/href=\"(.*?)\"/", $login, $url);
@@ -114,7 +114,7 @@ function get_info()
 {
     global $cookie;
     $data = [];
-    $html = http_get('https://www.hostloc.com/home.php?mod=spacecp&ac=credit', $cookie);
+    $html = http_get('https://hostloc.com/home.php?mod=spacecp&ac=credit', $cookie);
 
     preg_match('/\<a.*?title="访问我的空间">(.*)\<\/a\>/', $html, $preg);
     if (!empty($preg[1])) {
@@ -166,7 +166,7 @@ function http_get($url)
         curl_setopt($ch, CURLOPT_COOKIE, $cookie);
     }
     curl_setopt($ch, CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36');
-    curl_setopt($ch, CURLOPT_REFERER, 'https://www.hostloc.com/');
+    curl_setopt($ch, CURLOPT_REFERER, 'https://hostloc.com/');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -191,7 +191,7 @@ function http_post($url, $data)
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36');
-    curl_setopt($ch, CURLOPT_REFERER, 'https://www.hostloc.com/');
+    curl_setopt($ch, CURLOPT_REFERER, 'https://hostloc.com/');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
