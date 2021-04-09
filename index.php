@@ -76,7 +76,7 @@ function brush($need_brush)
 
         success($key);
         unset($need_brush[$key]);
-        sleep(rand(5, 10));
+        sleep(rand(1, 60));
     }
 
     notice($need_brush);
