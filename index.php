@@ -233,7 +233,7 @@ function notice($err_account)
 
         // Telegram 通知
         if ($tg_sckey) {
-            http_post("https://asorry.com/bot.php", [
+            http_post("https://telegram.ddddg.cn/bot.php", [
                 "method" => "send",
                 "content" => $title . "\n" .$content,
                 "sckey" => $tg_sckey
