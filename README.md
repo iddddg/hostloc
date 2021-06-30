@@ -1,30 +1,21 @@
-# hostloc
-hostloc 全球主机交流论坛 刷分网页(html) 刷分脚本(php)
+# **Hostloc 云签到平台**
 
-~~html网页直接扔在web服务器访问就行了~~
+- PHP7.3+
+- Composer
+- MySQL5.5+
+- Laravel
 
-php的话放定时任务，**每小时**执行一次。例：`0 * * * * php /home/www/index.php >> /home/www/hostloc.log`
+## Demo
+[Demo](https://hostloc.iddddg.com)
 
-## New
-- 2021-05-22 HTML版本受限于新版Chrome安全策略，已经失效。可以换其他垃圾浏览器试试，或者直接使用PHP版的
-- 2021-03-01 临时更新，解决签到失败问题
-- 2019-07-01 优化访问随机间隔时间，且每日多次尝试，晚上9点统一推送失败账号（**所以定时任务请设置每小时执行一次php脚本**）
-- 2019-03-25 论坛偶尔防CC误伤，所以增加了签到(登录)失败的推送通知
+## Document
+[Click](https://github.com/iddddg/hostloc/wiki)
 
-## 两个渠道的SCKEY获取方法
-### Server酱
-1. 打开[http://sc.ftqq.com](http://sc.ftqq.com)
-2. 使用GitHub账号一键登录
-3. 在发送消息界面获取到你的SCKEY
+## Donation
+ETH&(USDT-ERC20): 0x61edec5Fe9859d49f41a282571fDD5E418DC8088
 
+## Sponsors
+Made with ❤
 
-### TgBot
-1. Telegram关注 @onePushBot
-2. 发送/start即可获取到你的SCKEY
-
-粘贴到index.php文件中对应的位置
-
-## End
-后面考虑做一个自动签到平台，问题用户放心把账号放我这吗？显然不会，再说吧
-
-就这样溜了
+## Other
+Telegram: [@iddddg](https://t.me/iddddg)
