@@ -1,9 +1,9 @@
 # **Hostloc 云签到平台**
 
-- PHP7.3+
+- PHP 7.3+
 - Composer
-- MySQL5.5+
-- Laravel
+- MySQL 5.5+
+- Laravel 8
 
 ## Demo
 [Demo](https://hostloc.iddddg.com)
