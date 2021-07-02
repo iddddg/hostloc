@@ -1,4 +1,4 @@
-# **Hostloc 云签到平台**
+# **HOSTLOC 云签到平台**
 
 - PHP 7.3+
 - Composer

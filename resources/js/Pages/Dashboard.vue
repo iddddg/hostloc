@@ -2,7 +2,7 @@
     <app-layout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Hostloc 云签到
+                HOSTLOC 云签到
             </h2>
         </template>
 
