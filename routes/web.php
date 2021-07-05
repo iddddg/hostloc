@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Hostloc\IndexController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,6 +25,10 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->name('dashboard');
+// Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
+//     return Inertia::render('Dashboard');
+// })->name('dashboard');
+
+Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', [IndexController::class, 'index'])->name('dashboard');
+Route::middleware(['auth:sanctum', 'verified'])->post('/hostloc/update', [IndexController::class, 'update'])->name('update');
+Route::middleware(['auth:sanctum', 'verified'])->delete('/hostloc/destroy/{id}', [IndexController::class, 'destroy'])->name('destroy');
