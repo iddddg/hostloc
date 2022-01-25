@@ -117,35 +117,35 @@ function get_info()
     $html = http_get('https://hostloc.com/home.php?mod=spacecp&ac=credit', $cookie);
 
     preg_match('/\<a.*?title="访问我的空间">(.*)\<\/a\>/', $html, $preg);
-    if (!empty($preg[1])) {
+    if (isset($preg[1])) {
         $data['username'] = $preg[1];
     } else {
         $data['username'] = '';
     }
 
     preg_match("/>用户组: (.*?)<\/a>/", $html, $preg);
-    if (!empty($preg[1])) {
+    if (isset($preg[1])) {
         $data['group'] = $preg[1];
     } else {
         $data['group'] = '?';
     }
 
     preg_match("/金钱: <\/em>(\d+)/", $html, $preg);
-    if (!empty($preg[1])) {
+    if (isset($preg[1])) {
         $data['money'] = $preg[1];
     } else {
         $data['money'] = '?';
     }
 
     preg_match("/威望: <\/em>(\d+)/", $html, $preg);
-    if (!empty($preg[1])) {
+    if (isset($preg[1])) {
         $data['prestige'] = $preg[1];
     } else {
         $data['prestige'] = '?';
     }
 
     preg_match("/积分: (\d+)<\/a>/", $html, $preg);
-    if (!empty($preg[1])) {
+    if (isset($preg[1])) {
         $data['point'] = $preg[1];
     } else {
         $data['point'] = '?';
