@@ -45,32 +45,32 @@ class CheckInController extends Controller
         $html = $this->http_get(config('hostloc.integral_url'));
 
         preg_match('/\<a.*?title="访问我的空间">(.*)\<\/a\>/', $html, $name);
-        if (empty($name[1])) {
+        if (!isset($name[1])) {
             return [];
         }
 
         preg_match('/.html">\<img src="(.*)" \/>/', $html, $avatar_url);
-        if (empty($avatar_url[1])) {
+        if (!isset($avatar_url[1])) {
             return [];
         }
 
         preg_match("/>用户组: (.*?)<\/a>/", $html, $group);
-        if (empty($group[1])) {
+        if (!isset($group[1])) {
             return [];
         }
 
         preg_match("/金钱: <\/em>(\d+)/", $html, $money);
-        if (empty($money[1])) {
+        if (!isset($money[1])) {
             return [];
         }
 
         preg_match("/威望: <\/em>(\d+)/", $html, $prestige);
-        if (empty($prestige[1])) {
+        if (!isset($prestige[1])) {
             return [];
         }
 
         preg_match("/积分: (\d+)<\/a>/", $html, $integral);
-        if (empty($integral[1])) {
+        if (!isset($integral[1])) {
             return [];
         }
 
