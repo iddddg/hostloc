@@ -1,5 +1,5 @@
 # Hostloc 签到脚本
-hostloc 全球主机交流论坛 刷分脚本(PHP)
+Hostloc 全球主机交流论坛 PHP刷分脚本
 
 ## 食用方法
 1. 打开index.php，修改顶部配置部分的账号、密码、推送key等信息
