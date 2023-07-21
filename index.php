@@ -9,6 +9,8 @@ $account[] = ['账号1', '密码1'];
 $account[] = ['账号2', '密码2'];
 // 签到失败通知KEY 获取方法：Telegram关注 @onePushBot 发送/key即可获取
 $tg_push_key = '';
+// 账号签到情况保存文件（非请勿改，内有密码注意泄露）
+$file = dirname(__FILE__) . '/account.dat';
 
 // ↑↑↑↑↑↑↑↑↑↑配置结束（修改配置后，如果当前目录下有account.dat文件需删除！）↑↑↑↑↑↑↑↑↑↑
 
@@ -19,7 +21,7 @@ brush($need_brush);
 // 获取今日需要刷分的账号
 function need_brush($account)
 {
-    $file = dirname(__FILE__) . '/account.dat';
+    global $file;
     $dat = [];
     if (file_exists($file)) {
         $dat = json_decode(file_get_contents($file), 1);
@@ -183,7 +185,7 @@ function http_post($url, $data)
 // 成功更新状态和日期
 function success($key)
 {
-    $file = 'account.dat';
+    global $file;
     $dat = json_decode(file_get_contents($file), 1);
     $dat[$key]['status'] = 'suc';
     $dat[$key]['date'] = date('Y-m-d');
