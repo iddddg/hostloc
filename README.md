@@ -3,7 +3,7 @@ Hostloc 全球主机交流论坛 PHP刷分脚本
 
 ## 食用方法
 1. 打开index.php，修改顶部配置部分的账号、密码、推送key等信息
-2. 使用定时任务，**每小时**执行一次php文件。例：`0 * * * * php /home/www/index.php >> /home/www/hostloc.log`
+2. 使用定时任务，**每小时**执行一次php文件。例：`0 * * * * php /home/www/index.php`
 
 ## 消息推送 KEY
 1. Telegram关注 @onePushBot
