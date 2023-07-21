@@ -20,7 +20,7 @@ brush($need_brush);
 // 获取今日需要刷分的账号
 function need_brush($account)
 {
-    $file = 'account.dat';
+    $file = dirname(__FILE__) . 'account.dat';
     if (file_exists($file)) {
         $dat = json_decode(file_get_contents($file), 1);
     } else {
