@@ -13,7 +13,6 @@ $tg_push_key = '';
 // ↑↑↑↑↑↑↑↑↑↑配置结束（修改配置后，如果当前目录下有account.dat文件需删除！）↑↑↑↑↑↑↑↑↑↑
 
 // Go
-$cookie = "";
 $need_brush = need_brush($account);
 brush($need_brush);
 
@@ -21,6 +20,7 @@ brush($need_brush);
 function need_brush($account)
 {
     $file = dirname(__FILE__) . '/account.dat';
+    $dat = [];
     if (file_exists($file)) {
         $dat = json_decode(file_get_contents($file), 1);
     } else {
@@ -55,7 +55,7 @@ function brush($need_brush)
             echo "初始信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
             echo "刷分中 ";
             for ($i = 31180; $i < 31210; $i++) {
-                $html = http_get(str_replace('*', $i, 'https://hostloc.com/space-uid-*.html'));
+                http_get(str_replace('*', $i, 'https://hostloc.com/space-uid-*.html'));
                 echo $i == 31209 ? "+ 完成\n" : "+";
                 sleep(rand(5, 10));
             }
@@ -87,25 +87,19 @@ function login($username, $password)
         "handlekey" => "ls",
         'cookietime' => 2592000
     );
-    $login = http_post('https://hostloc.com/member.php?mod=logging&action=login&loginsubmit=yes&infloat=yes&lssubmit=yes&inajax=1', $loginData, $cookie);
-    // preg_match("/cookie=\"(\w*?)\=(\w*)/", $login, $cookie);
-    // preg_match("/href=\"(.*?)\"/", $login, $url);
-
-    // if (!empty($cookie[1])) {
-    //     $cookie = "{$cookie[1]}={$cookie[2]};";
-    //     http_post($url[1], $loginData, $cookie);
-    // }
+    $response = http_post('https://hostloc.com/member.php?mod=logging&action=login&loginsubmit=yes&infloat=yes&lssubmit=yes&inajax=1', $loginData);
+    // 获取Cookie
+    preg_match_all('/set-cookie: (.*?);/i', $response, $matches);
+    $cookie = implode(';', $matches[1]);
     return get_info();
 }
 
 // 获取个人信息
 function get_info()
 {
-    global $cookie;
     $data = [];
-    $html = http_get('https://hostloc.com/home.php?mod=spacecp&ac=credit', $cookie);
-
-    preg_match('/\<a.*?title="访问我的空间">(.*)\<\/a\>/', $html, $preg);
+    $html = http_get('https://hostloc.com/home.php?mod=spacecp&ac=credit');
+    preg_match('/<a.*?title="访问我的空间">(.*)<\/a>/', $html, $preg);
     if (isset($preg[1])) {
         $data['username'] = $preg[1];
     } else {
@@ -143,6 +137,7 @@ function get_info()
     return $data;
 }
 
+$cookie = "";
 // GET请求
 function http_get($url)
 {
@@ -150,7 +145,6 @@ function http_get($url)
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_COOKIEFILE, 'hostloc.cookie');
     if (!empty($cookie)) {
         curl_setopt($ch, CURLOPT_COOKIE, $cookie);
     }
@@ -169,14 +163,9 @@ function http_get($url)
 // POST请求
 function http_post($url, $data)
 {
-    global $cookie;
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HEADER, 0);
-    curl_setopt($ch, CURLOPT_COOKIEJAR, 'hostloc.cookie');
-    if (!empty($cookie)) {
-        curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-    }
+    curl_setopt($ch, CURLOPT_HEADER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36');
