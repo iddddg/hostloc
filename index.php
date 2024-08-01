@@ -28,13 +28,13 @@ function brush()
         echo "----------------------------------------------------------\n";
         $data = login($account['username'], $account['password']);
         if ($data['username'] !== $account['username']) {
-            echo "登录失败（" . ($is_actions ? $account['username'][0] . '***' : $account['username']) . "）\n";
+            echo "登录失败（" . ($is_actions ? mb_substr($account['username'], 0, 1) . '***' : $account['username']) . "）\n";
             echo date("Y-m-d H:i:s\n");
             echo "----------------------------------------------------------\n";
             $err_accounts[] = $account;
             continue;
         }
-        echo "登录成功（" . ($is_actions ? $account['username'][0] . '***' : $account['username']) . "）\n";
+        echo "登录成功（" . ($is_actions ? mb_substr($account['username'], 0, 1) . '***' : $account['username']) . "）\n";
         if (!$is_actions) {
             echo "初始信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
         }
@@ -59,7 +59,7 @@ function brush()
     $data = var_export($config, true);
     file_put_contents(__DIR__ . '/config.php', "<?php\nreturn $data;");
 
-    // 每晚最后有一次执行后发送当天刷分失败通知
+    // 发送当天刷分失败通知
     notice($err_accounts);
 }
 
@@ -236,7 +236,7 @@ function notice($err_accounts)
     $tg_push_key = $config['tg_push_key'];
 
     // 最后一次执行且有刷分失败的账号且TG推送Key不为空才推送
-    if (date('G') >= 18 || empty($err_accounts) || empty($tg_push_key)) {
+    if (date('G') < 18 || empty($err_accounts) || empty($tg_push_key)) {
         return;
     }
     $username = array_column($err_accounts, 'username');
