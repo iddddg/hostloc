@@ -1,83 +1,75 @@
 <?php
 // 设置默认时区
 date_default_timezone_set("PRC");
+// 引入配置文件
+$config = require __DIR__ . '/config.php';
 
-// ↓↓↓↓↓↓↓↓↓↓配置开始（修改配置后，如果当前目录下有account.dat文件需删除！）↓↓↓↓↓↓↓↓↓↓
+// 初始换环境变量
+init_env();
+// 开始刷分
+brush();
 
-// 多账号复制多个，一行一个账号密码
-$account[] = ['账号1', '密码1'];
-$account[] = ['账号2', '密码2'];
-// 签到失败通知KEY 获取方法：Telegram关注 @onePushBot 发送/key即可获取
-$tg_push_key = '';
-// 账号签到情况保存文件（非请勿改，内有密码注意泄露）
-$file = dirname(__FILE__) . '/account.dat';
-
-// ↑↑↑↑↑↑↑↑↑↑配置结束（修改配置后，如果当前目录下有account.dat文件需删除！）↑↑↑↑↑↑↑↑↑↑
-
-// Go
-$need_brush = need_brush($account);
-brush($need_brush);
-
-// 获取今日需要刷分的账号
-function need_brush($account)
+/**
+ * 刷分（每天登录+访问别人空间）
+ * @return void
+ */
+function brush()
 {
-    global $file;
-    $dat = [];
-    if (file_exists($file)) {
-        $dat = json_decode(file_get_contents($file), 1);
-    } else {
-        foreach ($account as $key => $value) {
-            $dat[$key] = [
-                'username' => $value[0],
-                'password' => $value[1],
-                'status' => 'err',
-                'date' => date('Y-m-d')
-            ];
+    global $config;
+    $accounts = $config['accounts'];
+    // 判断是否为Github Actions环境
+    $is_actions = (bool)getenv('LOC_ACCOUNTS');
+
+    $err_accounts = [];
+    foreach ($accounts as $key => $account) {
+        if ($account['last_brush'] === date("Y-m-d")) {
+            continue;
         }
-        file_put_contents($file, json_encode($dat));
-    }
-
-    foreach ($dat as $key => $value) {
-        if ($value['status'] == 'suc' && $value['date'] == date('Y-m-d')) {
-            unset($dat[$key]);
-        }
-    }
-
-    return $dat;
-}
-
-// 刷分
-function brush($need_brush)
-{
-    foreach ($need_brush as $key => $value) {
         echo "----------------------------------------------------------\n";
-        $data = login($value['username'], $value['password']);
-        if ($data['username'] == $value['username']) {
-            echo "登录成功（{$value['username']}）\n";
-            echo "初始信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
-            echo "刷分中 ";
-            for ($i = 31180; $i < 31210; $i++) {
-                http_get(str_replace('*', $i, 'https://hostloc.com/space-uid-*.html'));
-                echo $i == 31209 ? "+ 完成\n" : "+";
-                sleep(rand(5, 10));
-            }
-            $data = get_info();
-            echo "结束信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
+        $data = login($account['username'], $account['password']);
+        if ($data['username'] !== $account['username']) {
+            echo "登录失败（" . ($is_actions ? $account['username'][0] . '***' : $account['username']) . "）\n";
             echo date("Y-m-d H:i:s\n");
             echo "----------------------------------------------------------\n";
-            success($key);
-            unset($need_brush[$key]);
-        } else {
-            echo "登录失败（{$value['username']}）\n";
-            echo date("Y-m-d H:i:s\n");
-            echo "----------------------------------------------------------\n";
+            $err_accounts[] = $account;
+            continue;
         }
+        echo "登录成功（" . ($is_actions ? $account['username'][0] . '***' : $account['username']) . "）\n";
+        if (!$is_actions) {
+            echo "初始信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
+        }
+        echo "刷分中 ";
+        for ($i = 31180; $i < 31210; $i++) {
+            http_get(str_replace('*', $i, 'https://hostloc.com/space-uid-*.html'));
+            echo $i == 31209 ? "+ 完成\n" : "+";
+            sleep(rand(5, 10));
+        }
+        $data = get_info();
+        if (!$is_actions) {
+            echo "结束信息（用户组:{$data['group']},金钱:{$data['money']},威望:{$data['prestige']},积分:{$data['point']}）\n";
+        }
+        echo date("Y-m-d H:i:s\n");
+        echo "----------------------------------------------------------\n";
+        $accounts[$key]['last_brush'] = date("Y-m-d");
         sleep(rand(5, 30));
     }
-    notice($need_brush);
+
+    // 更新最后刷分日期
+    $config['accounts'] = $accounts;
+    $data = var_export($config, true);
+    file_put_contents(__DIR__ . '/config.php', "<?php\nreturn $data;");
+
+    // 每晚最后有一次执行后发送当天刷分失败通知
+    notice($err_accounts);
 }
 
-// 登录
+
+/**
+ * 登录
+ * @param $username
+ * @param $password
+ * @return array
+ */
 function login($username, $password)
 {
     global $cookie;
@@ -96,7 +88,10 @@ function login($username, $password)
     return get_info();
 }
 
-// 获取个人信息
+/**
+ * 获取个人信息
+ * @return array
+ */
 function get_info()
 {
     $data = [];
@@ -139,8 +134,11 @@ function get_info()
     return $data;
 }
 
-$cookie = "";
-// GET请求
+/**
+ * GET请求
+ * @param $url
+ * @return bool|string
+ */
 function http_get($url)
 {
     global $cookie;
@@ -162,7 +160,12 @@ function http_get($url)
     return $response;
 }
 
-// POST请求
+/**
+ * POST请求
+ * @param $url
+ * @param $data
+ * @return bool|string
+ */
 function http_post($url, $data)
 {
     $ch = curl_init();
@@ -182,49 +185,85 @@ function http_post($url, $data)
     return $response;
 }
 
-// 成功更新状态和日期
-function success($key)
+/**
+ * 初始化环境变量到配置文件
+ * @return void
+ */
+function init_env()
 {
-    global $file;
-    $dat = json_decode(file_get_contents($file), 1);
-    $dat[$key]['status'] = 'suc';
-    $dat[$key]['date'] = date('Y-m-d');
-    file_put_contents($file, json_encode($dat));
+    global $config;
+
+    // 获取环境变量中的账号密码（格式user1@@@pass1---user2@@@pass2）
+    $env_loc_accounts = getenv('LOC_ACCOUNTS');
+    if ($env_loc_accounts) {
+        $new_accounts = [];
+        foreach (explode("---", $env_loc_accounts) as $env_account) {
+            $account_parts = explode("@@@", $env_account);
+            if (count($account_parts) !== 2) {
+                continue;
+            }
+            $new_accounts[$account_parts[0]] = array(
+                'username' => $account_parts[0],
+                'password' => $account_parts[1],
+                'last_brush' => '',
+            );
+        }
+        // 更新和添加账户
+        foreach ($config['accounts'] as $account) {
+            if (isset($new_accounts[$account['username']])) {
+                $new_accounts[$account['username']]['last_brush'] = $account['last_brush'];
+            }
+        }
+        // 最新的账号密码
+        $config['accounts'] = array_values($new_accounts);
+    }
+
+    // 获取环境变量中的TG推送Key
+    $env_tg_push_key = getenv('TG_PUSH_KEY');
+    if ($env_tg_push_key) {
+        $config['tg_push_key'] = $env_tg_push_key;
+    }
 }
 
-// 通知
-function notice($err_account)
+/**
+ * 通知
+ * @param $err_accounts
+ * @return void
+ */
+function notice($err_accounts)
 {
-    global $tg_push_key;
-    if (!empty($err_account) && date('H') == 21) {
-        $username = array_column($err_account, 'username');
-        $title = 'Hostloc签到失败';
-        $content = '您的账号（' . implode('，', $username) . '），签到失败';
-        $data = array(
-            "key" => $tg_push_key,
-            "text" => $title . "\n" . $content
-        );
-        // Telegram 通知
-        if ($tg_push_key) {
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://tg-bot.t04.net/push',
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_SSL_VERIFYHOST => false,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 600,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'POST',
-                CURLOPT_POSTFIELDS => json_encode($data),
-                CURLOPT_HTTPHEADER => array(
-                    'Content-Type: application/json'
-                ),
-            ));
-            curl_exec($curl);
-            curl_close($curl);
-        }
+    global $config;
+    $tg_push_key = $config['tg_push_key'];
+
+    // 最后一次执行且有刷分失败的账号且TG推送Key不为空才推送
+    if (date('G') >= 18 || empty($err_accounts) || empty($tg_push_key)) {
+        return;
     }
+    $username = array_column($err_accounts, 'username');
+    $title = 'Hostloc 刷分失败';
+    $content = '账号（' . implode('，', $username) . '）刷分失败，请检查账号配置或程序';
+    $data = array(
+        "key" => $tg_push_key,
+        "text" => $title . "\n" . $content
+    );
+    // Telegram 通知
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://tg-bot.t04.net/push',
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => false,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 600,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json'
+        ),
+    ));
+    curl_exec($curl);
+    curl_close($curl);
 }
